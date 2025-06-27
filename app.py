@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import joblib
 import os
 
@@ -16,7 +16,12 @@ responses = {
 }
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__)\
+
+@app.route('/')
+def home():
+    return render_template("index.html")  # 👈 serve the chat UI
+
 def get_bot_reply(message):
     if "hello" in message.lower():
         return "Hi! How can I help you?"
