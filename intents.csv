@@ -1,0 +1,14 @@
+text,intent
+hi,greeting
+hello,greeting
+hey,greeting
+thanks,thanks
+thank you,thanks
+bye,goodbye
+see you,goodbye
+what is your return policy,return_policy
+i want to return a product,return_policy
+how do i return my order,return_policy
+track my order,order_status
+where is my order,order_status
+order status,order_status
