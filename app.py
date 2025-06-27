@@ -1,13 +1,22 @@
-
-
-
 from flask import Flask, request, jsonify
-import requests
+import joblib
 import os
 
-app = Flask(__name__)
+# Load ML model
+model = joblib.load('intent_model.pkl')
 
-# Replace this with your real bot logic
+# Intent to response mapping
+responses = {
+    "greeting": ["Hi! How can I assist you?"],
+    "thanks": ["You're welcome!"],
+    "goodbye": ["Goodbye and have a great day!"],
+    "return_policy": ["You can return items within 30 days of purchase."],
+    "order_status": ["Please provide your order ID to check the status."],
+    "unknown": ["Sorry, I didn't understand that. Can you rephrase?"]
+}
+
+# Initialize Flask app
+app = Flask(__name__)
 def get_bot_reply(message):
     if "hello" in message.lower():
         return "Hi! How can I help you?"
@@ -16,34 +25,18 @@ def get_bot_reply(message):
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_input = request.json['message']
-    reply = get_bot_reply(user_input)
-    return jsonify({'response': reply})
-
-# 🆕 Webhook route for Telegram
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.get_json()
-
-    if 'message' in data:
-        chat_id = data['message']['chat']['id']
-        text = data['message'].get('text', '')
-        response = get_bot_reply(text)
-
-        send_message(chat_id, response)
-
-    return jsonify({'ok': True})
-
-def send_message(chat_id, text):
-    token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    url = f"https://api.telegram.org/bot{7868342948:AAFSdg_j1tkN9jbGcDD8TEN4Y0hT3HYrJEA}/sendMessage"
-    payload = {
-        'chat_id': chat_id,
-        'text': text
-    }
-    requests.post(url, json=payload)
+    user_input = request.json.get("message", "")
+    try:
+        intent = model.predict([user_input])[0]
+    except:
+        intent = "unknown"
+    response = responses.get(intent, responses["unknown"])
+    return jsonify({"response": response[0]})
 
 if __name__ == '__main__':
-    app.run()
+    port = int(os.environ.get("PORT", 5000))  # Use Render's PORT if available
+    app.run(host='0.0.0.0', port=port, debug=True)
+
+
 
 
